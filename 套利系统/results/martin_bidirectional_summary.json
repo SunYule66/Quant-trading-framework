@@ -1,0 +1,27 @@
+{
+  "策略类型": "双向马丁网格",
+  "最终盈亏": 124.6674000000005,
+  "总交易次数": 43,
+  "开买单次数": 15,
+  "开卖单次数": 13,
+  "平仓次数": 15,
+  "系统参数": {
+    "base_price": null,
+    "grid_spacing_pct": 0.01,
+    "base_size": 0.01,
+    "multiplier": 2.0,
+    "max_martin_levels": 8,
+    "normal_levels": 3,
+    "max_position_pct": 0.9,
+    "take_profit_pct": 0.005,
+    "stop_loss_pct": 0.1,
+    "take_profit_mode": "unified",
+    "dynamic_base": true,
+    "total_capital": 10000
+  },
+  "回测时间": "2026-01-26 17:48:23",
+  "数据时间范围": {
+    "开始": "2025-11-24 00:00:00",
+    "结束": "2025-12-07 16:00:00"
+  }
+}

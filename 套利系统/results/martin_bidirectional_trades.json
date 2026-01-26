@@ -1,0 +1,361 @@
+[
+  {
+    "action": "open_buy",
+    "price": 87902.68,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1763949960,
+    "grid_line": 87647.81009999999
+  },
+  {
+    "action": "open_sell",
+    "price": 85899.3,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1763976300,
+    "grid_line": 85912.2099
+  },
+  {
+    "action": "open_buy",
+    "price": 88556.89,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1764007620,
+    "grid_line": 88515.6102
+  },
+  {
+    "action": "open_buy",
+    "price": 89415.45,
+    "size": 0.01,
+    "level": 3,
+    "timestamp": 1764178920,
+    "grid_line": 89383.41029999999
+  },
+  {
+    "action": "open_buy",
+    "price": 90318.73,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1764180960,
+    "grid_line": 90251.2104
+  },
+  {
+    "action": "close_all",
+    "price": 90832.35,
+    "timestamp": 1764205500,
+    "reason": "unified_profit",
+    "realized_pnl": 27.162200000000453,
+    "buy_count": 4,
+    "sell_count": 1
+  },
+  {
+    "action": "open_buy",
+    "price": 91757.98,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764211320,
+    "grid_line": 91740.6735
+  },
+  {
+    "action": "close_all",
+    "price": 92446.91,
+    "timestamp": 1764337620,
+    "reason": "unified_profit",
+    "realized_pnl": 6.889300000000076,
+    "buy_count": 1,
+    "sell_count": 0
+  },
+  {
+    "action": "open_sell",
+    "price": 91388.56,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764346980,
+    "grid_line": 91522.4409
+  },
+  {
+    "action": "close_all",
+    "price": 90893.58,
+    "timestamp": 1764349200,
+    "reason": "unified_profit",
+    "realized_pnl": 4.94979999999996,
+    "buy_count": 0,
+    "sell_count": 1
+  },
+  {
+    "action": "open_buy",
+    "price": 91883.8,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764508980,
+    "grid_line": 91802.51580000001
+  },
+  {
+    "action": "open_sell",
+    "price": 89816.17,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764547440,
+    "grid_line": 89984.6442
+  },
+  {
+    "action": "open_sell",
+    "price": 89059.69,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1764547800,
+    "grid_line": 89075.7084
+  },
+  {
+    "action": "open_sell",
+    "price": 88083.84,
+    "size": 0.01,
+    "level": 3,
+    "timestamp": 1764549120,
+    "grid_line": 88166.7726
+  },
+  {
+    "action": "open_sell",
+    "price": 87216.23,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1764550380,
+    "grid_line": 87257.8368
+  },
+  {
+    "action": "close_all",
+    "price": 86633.09,
+    "timestamp": 1764556680,
+    "reason": "unified_profit",
+    "realized_pnl": 29.759999999999998,
+    "buy_count": 1,
+    "sell_count": 4
+  },
+  {
+    "action": "open_sell",
+    "price": 85746.78,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764563100,
+    "grid_line": 85766.7591
+  },
+  {
+    "action": "close_all",
+    "price": 85307.1,
+    "timestamp": 1764593160,
+    "reason": "unified_profit",
+    "realized_pnl": 4.3967999999999305,
+    "buy_count": 0,
+    "sell_count": 1
+  },
+  {
+    "action": "open_buy",
+    "price": 86268.0,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764597840,
+    "grid_line": 86160.171
+  },
+  {
+    "action": "open_sell",
+    "price": 84428.34,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764603240,
+    "grid_line": 84454.02900000001
+  },
+  {
+    "action": "open_buy",
+    "price": 87267.76,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1764637560,
+    "grid_line": 87013.24200000001
+  },
+  {
+    "action": "open_buy",
+    "price": 87981.36,
+    "size": 0.01,
+    "level": 3,
+    "timestamp": 1764684420,
+    "grid_line": 87866.31300000001
+  },
+  {
+    "action": "open_buy",
+    "price": 88739.99,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1764685560,
+    "grid_line": 88719.384
+  },
+  {
+    "action": "close_all",
+    "price": 89400.39,
+    "timestamp": 1764687600,
+    "reason": "unified_profit",
+    "realized_pnl": 30.32799999999989,
+    "buy_count": 4,
+    "sell_count": 1
+  },
+  {
+    "action": "open_buy",
+    "price": 90606.27,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764688320,
+    "grid_line": 90294.3939
+  },
+  {
+    "action": "close_all",
+    "price": 91081.99,
+    "timestamp": 1764690780,
+    "reason": "unified_profit",
+    "realized_pnl": 4.757200000000012,
+    "buy_count": 1,
+    "sell_count": 0
+  },
+  {
+    "action": "open_buy",
+    "price": 92000.0,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764699480,
+    "grid_line": 91992.80990000001
+  },
+  {
+    "action": "close_all",
+    "price": 92580.59,
+    "timestamp": 1764727440,
+    "reason": "unified_profit",
+    "realized_pnl": 5.805899999999965,
+    "buy_count": 1,
+    "sell_count": 0
+  },
+  {
+    "action": "open_buy",
+    "price": 93553.53,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764738420,
+    "grid_line": 93506.3959
+  },
+  {
+    "action": "close_all",
+    "price": 94070.91,
+    "timestamp": 1764802860,
+    "reason": "unified_profit",
+    "realized_pnl": 5.173800000000047,
+    "buy_count": 1,
+    "sell_count": 0
+  },
+  {
+    "action": "open_sell",
+    "price": 93005.73,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764807120,
+    "grid_line": 93130.2009
+  },
+  {
+    "action": "close_all",
+    "price": 92500.01,
+    "timestamp": 1764853500,
+    "reason": "unified_profit",
+    "realized_pnl": 5.0572000000000115,
+    "buy_count": 0,
+    "sell_count": 1
+  },
+  {
+    "action": "open_sell",
+    "price": 91499.16,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764875580,
+    "grid_line": 91575.00989999999
+  },
+  {
+    "action": "close_all",
+    "price": 90984.03,
+    "timestamp": 1764876060,
+    "reason": "unified_profit",
+    "realized_pnl": 5.151300000000047,
+    "buy_count": 0,
+    "sell_count": 1
+  },
+  {
+    "action": "open_buy",
+    "price": 91896.93,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764877020,
+    "grid_line": 91893.8703
+  },
+  {
+    "action": "close_all",
+    "price": 92364.24,
+    "timestamp": 1764881100,
+    "reason": "unified_profit",
+    "realized_pnl": 4.673100000000122,
+    "buy_count": 1,
+    "sell_count": 0
+  },
+  {
+    "action": "open_sell",
+    "price": 91388.92,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764926340,
+    "grid_line": 91440.59760000001
+  },
+  {
+    "action": "close_all",
+    "price": 90806.99,
+    "timestamp": 1764941160,
+    "reason": "unified_profit",
+    "realized_pnl": 5.81929999999993,
+    "buy_count": 0,
+    "sell_count": 1
+  },
+  {
+    "action": "open_sell",
+    "price": 89557.0,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764950820,
+    "grid_line": 89898.9201
+  },
+  {
+    "action": "close_all",
+    "price": 89091.63,
+    "timestamp": 1764951420,
+    "reason": "unified_profit",
+    "realized_pnl": 4.6536999999999535,
+    "buy_count": 0,
+    "sell_count": 1
+  },
+  {
+    "action": "open_sell",
+    "price": 88191.6,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1764952920,
+    "grid_line": 88200.71370000001
+  },
+  {
+    "action": "open_buy",
+    "price": 90182.62,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1765030620,
+    "grid_line": 89982.5463
+  },
+  {
+    "action": "close_all",
+    "price": 89460.16,
+    "timestamp": "1765123200",
+    "reason": "end_of_data",
+    "realized_pnl": -19.910199999999897,
+    "buy_count": 1,
+    "sell_count": 1
+  }
+]
