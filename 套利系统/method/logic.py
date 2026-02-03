@@ -3,6 +3,7 @@ import csv
 import json
 import numpy as np
 import datetime
+import argparse
 from glob import glob
 import matplotlib.pyplot as plt
 import os
@@ -309,88 +310,8 @@ def load_binance_funding(filename):
                 continue
     return fundings
 
-# 更新路径指向data文件夹中的子文件夹
-glob_okx_price = glob(os.path.join(config.DATA_DIR, "OKX_1m_kline", "BTC-USDT-candlesticks-2025-*.csv"))
-glob_binance_price = glob(os.path.join(config.DATA_DIR, "Binance_1m_kline", "BTCUSDT-1m-2025-*.csv"))
-glob_okx_funding = glob(os.path.join(config.DATA_DIR, "OKX_funding_rate", "allswap-fundingrates-2025-*.csv"))
-file_binance_funding = os.path.join(config.DATA_DIR, "Binance_funding_rate", "Funding Rate History_BTCUSDT Perpetual_2025-12-09.csv")
-
-# 批量读取所有数据文件
-okx_prices, binance_prices = [], []
-for f in glob_okx_price:
-    okx_prices += load_okx_price(f)
-for f in glob_binance_price:
-    binance_prices += load_binance_price(f)
-# 从allswap-fundingrates文件中提取BTC-USDT-SWAP资金费率
-okx_fundings = load_okx_funding_from_allswap(glob_okx_funding)
-binance_fundings = load_binance_funding(file_binance_funding)
-
-# 构建DataFrame
-df_binance_price = pd.DataFrame(binance_prices)
-df_okx_price = pd.DataFrame(okx_prices)
-df_binance_funding = pd.DataFrame(binance_fundings)
-df_okx_funding = pd.DataFrame(okx_fundings)
-
-# 统一用timestamp为索引
-df_binance_price.set_index('timestamp', inplace=True)
-df_okx_price.set_index('timestamp', inplace=True)
-df_binance_funding.set_index('timestamp', inplace=True)
-df_okx_funding.set_index('timestamp', inplace=True)
-
-# 合并所有数据，按时间戳对齐
-df = pd.DataFrame(index=sorted(set(df_binance_price.index) | set(df_okx_price.index) | set(df_binance_funding.index) | set(df_okx_funding.index)))
-df['binance_price'] = df_binance_price['price']
-df['okx_price'] = df_okx_price['price']
-df['binance_funding'] = df_binance_funding['funding_rate']
-df['okx_funding'] = df_okx_funding['funding_rate']
-
-# 时间戳转 datetime（北京时间）
-df['datetime'] = pd.to_datetime(df.index, unit='s', utc=True).dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
-
-# 筛选时间段
-mask = (df['datetime'] >= pd.Timestamp('2025-11-24')) & (df['datetime'] <= pd.Timestamp('2025-12-07 16:00:00'))
-df = df.loc[mask]
-
-# 实例化套利系统，参数统一从 config.ARBITRAGE_CONFIG 读取
-system = ArbitrageSystem(**config.ARBITRAGE_CONFIG)
-
-# 预处理数据，构造套利逻辑所需字段
-df['price_a'] = df['okx_price']
-df['price_b'] = df['binance_price']
-df['funding_a'] = df['okx_funding']
-df['funding_b'] = df['binance_funding']
-
-# 对齐时间序列并清洗缺失值，避免 NaN 造成开平仓判断异常
-df.sort_index(inplace=True)
-
-# 先记录原始可用数据的最后时间戳，再做前向填充，避免前值填充把缺失尾段误判为可用
-last_valids = []
-for col in ['price_a', 'price_b', 'funding_a', 'funding_b']:
-    lv = df[col].last_valid_index()
-    if lv is not None:
-        last_valids.append(lv)
-cutoff = min(last_valids) if last_valids else None
-
-# 再填充，随后按原始可用截止截断
-df[['price_a', 'price_b', 'funding_a', 'funding_b']] = df[['price_a', 'price_b', 'funding_a', 'funding_b']].ffill()
-if cutoff is not None:
-    df = df.loc[:cutoff]
-# 截断后再 dropna，避免尾部缺口导致的虚假平仓
-df = df.dropna(subset=['price_a', 'price_b', 'funding_a', 'funding_b'])
-
-
-# 模拟实时交易：持仓未平仓前不再开新仓
-for idx in range(len(df)):
-    closed_now = system.check_close(df, idx)
-    if system.has_open_positions():
-        continue
-    if closed_now:
-        # 本周期刚平仓，为避免同一周期即刻再开仓，跳过本周期
-        continue
-    system.check_open(df, idx)
-
-# 输出开仓和平仓信息到文件
 def convert(obj):
+    """JSON 序列化时把 numpy 类型转为 Python 原生类型"""
     if isinstance(obj, np.integer):
         return int(obj)
     if isinstance(obj, np.floating):
@@ -401,13 +322,6 @@ def convert(obj):
         return [convert(i) for i in obj]
     return obj
 
-# 创建results文件夹
-results_dir = config.RESULTS_DIR
-os.makedirs(results_dir, exist_ok=True)
-
-# 输出开仓和平仓信息到results文件夹
-with open(os.path.join(results_dir, 'arbitrage_positions.json'), 'w', encoding='utf-8') as f:
-    json.dump(convert(system.positions), f, ensure_ascii=False, indent=2)
 
 # === 计算总收益率（价格收益率 + 资金费率收益，不含手续费/滑点）===
 def calc_price_return(position):
@@ -453,43 +367,6 @@ def calc_funding_return(position, funding_df):
         total += rate_eff * hours
     return float(total)
 
-# 计算并打印总收益率（复利）
-funding_df = df[['funding_a', 'funding_b']].copy().ffill().dropna()
-cum_return = 1.0
-for pos in system.positions:
-    price_ret = calc_price_return(pos)
-    funding_ret = calc_funding_return(pos, funding_df)
-    total_ret = price_ret + funding_ret
-    cum_return *= (1 + total_ret)
-
-final_return_pct = (cum_return - 1) * 100
-print(f"最终收益率: {final_return_pct:.4f}%")
-print(f"结果已保存到: {results_dir}")
-
-# 保存收益率结果到文件
-closed_positions = [p for p in system.positions if p.get('平仓', False)]
-open_positions = [p for p in system.positions if not p.get('平仓', False)]
-
-results_summary = {
-    '最终收益率(%)': final_return_pct,
-    '总交易次数': len(closed_positions),
-    '未平仓数量': len(open_positions),
-    '系统参数': {
-        'X': system.X,
-        'Y': system.Y,
-        'A': system.A,
-        'B': system.B,
-        'N': system.N,
-        'M': system.M,
-        'P': system.P,
-        'Q': system.Q
-    },
-    '计算时间': datetime.datetime.now(BEIJING_TZ).strftime('%Y-%m-%d %H:%M:%S')
-}
-with open(os.path.join(results_dir, 'results_summary.json'), 'w', encoding='utf-8') as f:
-    json.dump(results_summary, f, ensure_ascii=False, indent=2)
-
-# 绘图函数
 def plot_results(df, positions, funding_df, output_dir):
     """绘制套利结果图表"""
     # 设置matplotlib支持中文显示
@@ -642,6 +519,121 @@ def plot_results(df, positions, funding_df, output_dir):
     print(f"图表已保存到: {output_path}")
     plt.close()
 
-# 调用绘图函数
-plot_results(df, system.positions, funding_df, results_dir)
+def main():
+    """套利回测主入口：支持 --config 指定配置文件（可含 data_config.start_date/end_date/data_dir）。"""
+    parser = argparse.ArgumentParser(description='套利策略回测')
+    parser.add_argument('--config', type=str, default=None, help='run_config.json 路径，可选 data_config.start_date/end_date/data_dir')
+    args = parser.parse_args()
 
+    run_config = {}
+    if args.config and os.path.isfile(args.config):
+        try:
+            with open(args.config, 'r', encoding='utf-8') as f:
+                run_config = json.load(f)
+        except Exception:
+            pass
+    data_cfg = run_config.get('data_config', {})
+    data_dir = data_cfg.get('data_dir') or config.DATA_DIR
+    if isinstance(data_dir, str) and os.path.isdir(data_dir):
+        pass
+    else:
+        data_dir = config.DATA_DIR
+    start_date = data_cfg.get('start_date') or '2025-11-24'
+    end_date = data_cfg.get('end_date') or '2025-12-07'
+
+    glob_okx_price = glob(os.path.join(data_dir, "OKX_1m_kline", "BTC-USDT-candlesticks-2025-*.csv"))
+    glob_binance_price = glob(os.path.join(data_dir, "Binance_1m_kline", "BTCUSDT-1m-2025-*.csv"))
+    glob_okx_funding = glob(os.path.join(data_dir, "OKX_funding_rate", "allswap-fundingrates-2025-*.csv"))
+    file_binance_funding = os.path.join(data_dir, "Binance_funding_rate", "Funding Rate History_BTCUSDT Perpetual_2025-12-09.csv")
+
+    okx_prices, binance_prices = [], []
+    for f in glob_okx_price:
+        okx_prices += load_okx_price(f)
+    for f in glob_binance_price:
+        binance_prices += load_binance_price(f)
+    okx_fundings = load_okx_funding_from_allswap(glob_okx_funding)
+    binance_fundings = load_binance_funding(file_binance_funding)
+
+    df_binance_price = pd.DataFrame(binance_prices)
+    df_okx_price = pd.DataFrame(okx_prices)
+    df_binance_funding = pd.DataFrame(binance_fundings)
+    df_okx_funding = pd.DataFrame(okx_fundings)
+    df_binance_price.set_index('timestamp', inplace=True)
+    df_okx_price.set_index('timestamp', inplace=True)
+    df_binance_funding.set_index('timestamp', inplace=True)
+    df_okx_funding.set_index('timestamp', inplace=True)
+
+    df = pd.DataFrame(index=sorted(set(df_binance_price.index) | set(df_okx_price.index) | set(df_binance_funding.index) | set(df_okx_funding.index)))
+    df['binance_price'] = df_binance_price['price']
+    df['okx_price'] = df_okx_price['price']
+    df['binance_funding'] = df_binance_funding['funding_rate']
+    df['okx_funding'] = df_okx_funding['funding_rate']
+    df['datetime'] = pd.to_datetime(df.index, unit='s', utc=True).dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+
+    end_ts = pd.Timestamp(end_date)
+    if end_ts.hour == 0 and end_ts.minute == 0:
+        end_ts = pd.Timestamp(end_date + ' 23:59:59')
+    mask = (df['datetime'] >= pd.Timestamp(start_date)) & (df['datetime'] <= end_ts)
+    df = df.loc[mask]
+
+    system = ArbitrageSystem(**config.ARBITRAGE_CONFIG)
+    df['price_a'] = df['okx_price']
+    df['price_b'] = df['binance_price']
+    df['funding_a'] = df['okx_funding']
+    df['funding_b'] = df['binance_funding']
+    df.sort_index(inplace=True)
+
+    last_valids = []
+    for col in ['price_a', 'price_b', 'funding_a', 'funding_b']:
+        lv = df[col].last_valid_index()
+        if lv is not None:
+            last_valids.append(lv)
+    cutoff = min(last_valids) if last_valids else None
+    df[['price_a', 'price_b', 'funding_a', 'funding_b']] = df[['price_a', 'price_b', 'funding_a', 'funding_b']].ffill()
+    if cutoff is not None:
+        df = df.loc[:cutoff]
+    df = df.dropna(subset=['price_a', 'price_b', 'funding_a', 'funding_b'])
+
+    for idx in range(len(df)):
+        closed_now = system.check_close(df, idx)
+        if system.has_open_positions():
+            continue
+        if closed_now:
+            continue
+        system.check_open(df, idx)
+
+    results_dir = config.RESULTS_DIR
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, 'arbitrage_positions.json'), 'w', encoding='utf-8') as f:
+        json.dump(convert(system.positions), f, ensure_ascii=False, indent=2)
+
+    funding_df = df[['funding_a', 'funding_b']].copy().ffill().dropna()
+    cum_return = 1.0
+    for pos in system.positions:
+        price_ret = calc_price_return(pos)
+        funding_ret = calc_funding_return(pos, funding_df)
+        total_ret = price_ret + funding_ret
+        cum_return *= (1 + total_ret)
+    final_return_pct = (cum_return - 1) * 100
+    print(f"最终收益率: {final_return_pct:.4f}%")
+    print(f"结果已保存到: {results_dir}")
+
+    closed_positions = [p for p in system.positions if p.get('平仓', False)]
+    open_positions = [p for p in system.positions if not p.get('平仓', False)]
+    results_summary = {
+        '最终收益率(%)': final_return_pct,
+        '总交易次数': len(closed_positions),
+        '未平仓数量': len(open_positions),
+        '系统参数': {
+            'X': system.X, 'Y': system.Y, 'A': system.A, 'B': system.B,
+            'N': system.N, 'M': system.M, 'P': system.P, 'Q': system.Q
+        },
+        '计算时间': datetime.datetime.now(BEIJING_TZ).strftime('%Y-%m-%d %H:%M:%S')
+    }
+    with open(os.path.join(results_dir, 'results_summary.json'), 'w', encoding='utf-8') as f:
+        json.dump(results_summary, f, ensure_ascii=False, indent=2)
+    plot_results(df, system.positions, funding_df, results_dir)
+
+
+if __name__ == '__main__':
+    main()

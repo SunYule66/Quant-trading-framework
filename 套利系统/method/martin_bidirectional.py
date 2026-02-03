@@ -1551,6 +1551,10 @@ if __name__ == '__main__':
         system = BidirectionalMartinGrid(**strategy_config)
         exchange = data_config['exchange']
         symbol = data_config['symbol']
+        # 实盘可视化：状态与历史写入 results/realtime_martin_live.json（供仪表盘读取）
+        realtime_history = []  # 保留最近 N 条用于走势图
+        REALTIME_HISTORY_MAX = 500
+        live_file = os.path.join(config.RESULTS_DIR, 'realtime_martin_live.json')
         try:
             while True:
                 rt = get_realtime_price(exchange, symbol, proxies=proxies)
@@ -1591,6 +1595,37 @@ if __name__ == '__main__':
                         except Exception as ex:
                             print(f"  [模拟盘] 下单异常: {ex}")
                     print(f"[{datetime.datetime.now(BEIJING_TZ).strftime('%H:%M:%S')}] 价格={price:.2f} 买层={status['buy_level']} 卖层={status['sell_level']} 已实现盈亏={system.total_profit:.2f}")
+                    # 写入实盘可视化数据（供仪表盘实盘页展示）
+                    try:
+                        now_iso = datetime.datetime.now(BEIJING_TZ).strftime('%Y-%m-%d %H:%M:%S')
+                        realtime_history.append({
+                            't': now_iso,
+                            'price': round(price, 2),
+                            'total_profit': round(system.total_profit, 4),
+                            'buy_level': status['buy_level'],
+                            'sell_level': status['sell_level'],
+                        })
+                        if len(realtime_history) > REALTIME_HISTORY_MAX:
+                            realtime_history = realtime_history[-REALTIME_HISTORY_MAX:]
+                        snapshot = {
+                            'timestamp_iso': now_iso,
+                            'price': round(price, 2),
+                            'base_price': round(system.base_price, 2) if system.base_price is not None else None,
+                            'buy_level': status['buy_level'],
+                            'sell_level': status['sell_level'],
+                            'total_profit': round(system.total_profit, 4),
+                            'unrealized_pnl': round(status.get('unrealized_pnl', 0), 4),
+                            'buy_positions_count': status['buy_positions_count'],
+                            'sell_positions_count': status['sell_positions_count'],
+                            'buy_avg_price': round(status['buy_avg_price'], 2) if status.get('buy_avg_price') is not None else None,
+                            'sell_avg_price': round(status['sell_avg_price'], 2) if status.get('sell_avg_price') is not None else None,
+                            'trade_count': status['trade_count'],
+                        }
+                        os.makedirs(config.RESULTS_DIR, exist_ok=True)
+                        with open(live_file, 'w', encoding='utf-8') as f:
+                            json.dump({'snapshot': snapshot, 'history': realtime_history}, f, ensure_ascii=False, indent=2)
+                    except Exception as e:
+                        print(f"  [实盘可视化] 写入失败: {e}")
                 time.sleep(interval_sec)
         except KeyboardInterrupt:
             print("\n用户中断，退出实时模式。")

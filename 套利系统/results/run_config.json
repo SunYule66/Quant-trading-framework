@@ -1,5 +1,7 @@
 {
-  "run_mode": "backtest",
+  "run_mode": "realtime",
+  "paper_trade": true,
+  "poll_interval_seconds": 60,
   "data_config": {
     "exchange": "okx",
     "symbol": "BTC-USDT-SWAP",
@@ -8,7 +10,10 @@
     "end_date": "2026-02-02",
     "data_dir": "C:\\Users\\86132\\Desktop\\PGPortfolio-master\\套利系统\\data",
     "binance_futures": false,
-    "proxies": null
+    "proxies": {
+      "http": "http://127.0.0.1:7897",
+      "https": "http://127.0.0.1:7897"
+    }
   },
   "strategy_config": {
     "base_price": null,

@@ -1,0 +1,53 @@
+{
+  "snapshot": {
+    "timestamp_iso": "2026-02-03 21:35:21",
+    "price": 78310.8,
+    "base_price": 78351.3,
+    "buy_level": 0,
+    "sell_level": 0,
+    "total_profit": 0.0,
+    "unrealized_pnl": 0.0,
+    "buy_positions_count": 0,
+    "sell_positions_count": 0,
+    "buy_avg_price": null,
+    "sell_avg_price": null,
+    "trade_count": 0
+  },
+  "history": [
+    {
+      "t": "2026-02-03 21:31:16",
+      "price": 78351.3,
+      "total_profit": 0.0,
+      "buy_level": 0,
+      "sell_level": 0
+    },
+    {
+      "t": "2026-02-03 21:32:17",
+      "price": 78322.0,
+      "total_profit": 0.0,
+      "buy_level": 0,
+      "sell_level": 0
+    },
+    {
+      "t": "2026-02-03 21:33:18",
+      "price": 78288.8,
+      "total_profit": 0.0,
+      "buy_level": 0,
+      "sell_level": 0
+    },
+    {
+      "t": "2026-02-03 21:34:19",
+      "price": 78243.8,
+      "total_profit": 0.0,
+      "buy_level": 0,
+      "sell_level": 0
+    },
+    {
+      "t": "2026-02-03 21:35:21",
+      "price": 78310.8,
+      "total_profit": 0.0,
+      "buy_level": 0,
+      "sell_level": 0
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import os
 import json
 import sys
 import subprocess
+import signal
 from pathlib import Path
 
 import streamlit as st
@@ -141,98 +142,115 @@ def main():
         initial_sidebar_state='collapsed'
     )
     inject_theme()
-    if 'strategy' not in st.session_state:
-        st.session_state.strategy = 'martin'
 
-    # 顶部：标题 + 策略选择
-    st.markdown('<div class="hero"><h1>套利系统</h1><p>马丁双向 · 套利策略 · 回测与结果</p></div>', unsafe_allow_html=True)
-    strat = st.radio(
-        '选择策略',
-        ['martin', 'arbitrage'],
-        format_func=lambda x: '马丁策略' if x == 'martin' else '套利策略',
-        horizontal=True,
-        key='strategy_radio',
-        label_visibility='collapsed',
-    )
-    st.session_state.strategy = strat
+    # 顶部标题
+    st.markdown('<div class="hero"><h1>套利系统</h1><p>马丁策略 · 套利系统 · 完全独立入口</p></div>', unsafe_allow_html=True)
     st.markdown('---')
 
-    tab_overview, tab_backtest, tab_results, tab_config = st.tabs(['概览', '回测', '结果', '配置'])
+    # 一级 Tab：马丁策略 / 套利系统（完全分开）
+    tab_martin, tab_arbitrage = st.tabs(['马丁策略', '套利系统'])
 
-    with tab_overview:
-        render_overview()
-    with tab_backtest:
-        render_backtest()
-    with tab_results:
-        render_results()
-    with tab_config:
-        render_config()
+    with tab_martin:
+        m_overview, m_backtest, m_results, m_realtime, m_config = st.tabs(['概览', '回测', '结果', '实盘', '配置'])
+        with m_overview:
+            render_martin_overview()
+        with m_backtest:
+            render_martin_backtest()
+        with m_results:
+            render_martin_results()
+        with m_realtime:
+            render_martin_realtime()
+        with m_config:
+            render_config()
+
+    with tab_arbitrage:
+        a_overview, a_backtest, a_results, a_realtime, a_config = st.tabs(['概览', '回测', '结果', '实盘', '配置'])
+        with a_overview:
+            render_arbitrage_overview()
+        with a_backtest:
+            render_arbitrage_backtest()
+        with a_results:
+            render_arbitrage_results()
+        with a_realtime:
+            render_arbitrage_realtime()
+        with a_config:
+            render_config()
 
 
-def render_overview():
+def render_martin_overview():
+    """马丁策略 · 概览（仅马丁内容）"""
     martin = load_json_safe(RESULTS_DIR / 'martin_bidirectional_summary.json', {})
-    arb = load_json_safe(RESULTS_DIR / 'results_summary.json', {})
-    is_martin = st.session_state.get('strategy', 'martin') == 'martin'
-
+    st.markdown('<div class="section-title">马丁策略 · 概览</div>', unsafe_allow_html=True)
     pnl = martin.get('最终盈亏', 0)
     kpi_class = 'positive' if pnl >= 0 else 'negative'
     st.markdown(f'''
     <div class="kpi-grid">
         <div class="kpi-card {kpi_class}"><div class="kpi-label">马丁盈亏 (USDT)</div><div class="kpi-value">{pnl:,.2f}</div></div>
         <div class="kpi-card"><div class="kpi-label">马丁交易次数</div><div class="kpi-value">{martin.get("总交易次数", 0)}</div></div>
-        <div class="kpi-card"><div class="kpi-label">套利收益率</div><div class="kpi-value">{arb.get("最终收益率(%)", 0):.2f}%</div></div>
-        <div class="kpi-card"><div class="kpi-label">套利交易次数</div><div class="kpi-value">{arb.get("总交易次数", 0)}</div></div>
     </div>''', unsafe_allow_html=True)
-
     col_left, col_right = st.columns([1, 1])
     with col_left:
-        if is_martin:
-            st.markdown('<div class="card-wrap"><h3>马丁策略 · 快捷回测</h3></div>', unsafe_allow_html=True)
-            last = load_json_safe(RESULTS_DIR / 'martin_bidirectional_summary.json', {}).get('数据配置', {})
-            sym = last.get('symbol') or 'BTC-USDT-SWAP'
-            start = last.get('start_date') or '2026-02-01'
-            end = last.get('end_date') or '2026-02-02'
-            with st.form('quick_backtest'):
-                q_symbol = st.text_input('交易对', value=sym, key='q_sym')
-                q_start = st.text_input('开始日期', value=start, key='q_start')
-                q_end = st.text_input('结束日期', value=end, key='q_end')
-                if st.form_submit_button('执行马丁回测'):
-                    cfg = {
-                        'run_mode': 'backtest',
-                        'data_config': {
-                            'exchange': 'okx', 'symbol': q_symbol.strip() or sym,
-                            'interval': '1m', 'start_date': q_start, 'end_date': q_end,
-                            'data_dir': config.DATA_DIR, 'binance_futures': False, 'proxies': None,
-                        },
-                        'strategy_config': _default_strategy_from_last(),
-                    }
-                    path = RESULTS_DIR / 'run_config.json'
-                    with open(path, 'w', encoding='utf-8') as f:
-                        json.dump(cfg, f, ensure_ascii=False, indent=2)
-                    run_script(path)
-            st.caption('使用默认策略参数，完整参数请在「回测」页设置。')
-        else:
-            st.markdown('<div class="card-wrap"><h3>套利策略</h3></div>', unsafe_allow_html=True)
-            st.info('套利策略回测与逻辑请通过 method/logic.py 或相关脚本执行，结果将写入 results/ 并在「结果」页查看。')
-            if arb:
-                st.metric('当前套利收益率', f"{arb.get('最终收益率(%)', 0):.2f}%")
-                st.metric('套利交易次数', arb.get('总交易次数', 0))
-
+        st.markdown('<div class="card-wrap"><h3>马丁策略 · 快捷回测</h3></div>', unsafe_allow_html=True)
+        last = load_json_safe(RESULTS_DIR / 'martin_bidirectional_summary.json', {}).get('数据配置', {})
+        sym = last.get('symbol') or 'BTC-USDT-SWAP'
+        start = last.get('start_date') or '2026-02-01'
+        end = last.get('end_date') or '2026-02-02'
+        with st.form('quick_backtest'):
+            q_symbol = st.text_input('交易对', value=sym, key='q_sym')
+            q_start = st.text_input('开始日期', value=start, key='q_start')
+            q_end = st.text_input('结束日期', value=end, key='q_end')
+            if st.form_submit_button('执行马丁回测'):
+                cfg = {
+                    'run_mode': 'backtest',
+                    'data_config': {
+                        'exchange': 'okx', 'symbol': q_symbol.strip() or sym,
+                        'interval': '1m', 'start_date': q_start, 'end_date': q_end,
+                        'data_dir': config.DATA_DIR, 'binance_futures': False, 'proxies': None,
+                    },
+                    'strategy_config': _default_strategy_from_last(),
+                }
+                path = RESULTS_DIR / 'run_config.json'
+                with open(path, 'w', encoding='utf-8') as f:
+                    json.dump(cfg, f, ensure_ascii=False, indent=2)
+                run_script(path)
+        st.caption('使用默认策略参数，完整参数请在「回测」页设置。')
     with col_right:
-        st.markdown(f'<div class="card-wrap"><h3>{"马丁" if is_martin else "套利"} · 最近结果摘要</h3></div>', unsafe_allow_html=True)
-        if is_martin:
-            if martin:
-                st.metric('最终盈亏 (USDT)', martin.get('最终盈亏', 0))
-                st.metric('总交易次数', martin.get('总交易次数', 0))
-                st.caption(f"时间范围: {martin.get('数据时间范围', {}).get('开始', '-')} ~ {martin.get('数据时间范围', {}).get('结束', '-')}")
-            else:
-                st.info('暂无马丁回测结果，请先执行回测。')
+        st.markdown('<div class="card-wrap"><h3>马丁 · 最近结果摘要</h3></div>', unsafe_allow_html=True)
+        if martin:
+            st.metric('最终盈亏 (USDT)', martin.get('最终盈亏', 0))
+            st.metric('总交易次数', martin.get('总交易次数', 0))
+            st.caption(f"时间范围: {martin.get('数据时间范围', {}).get('开始', '-')} ~ {martin.get('数据时间范围', {}).get('结束', '-')}")
         else:
-            if arb:
-                st.metric('最终收益率', f"{arb.get('最终收益率(%)', 0):.2f}%")
-                st.metric('总交易次数', arb.get('总交易次数', 0))
-            else:
-                st.info('暂无套利结果摘要。')
+            st.info('暂无马丁回测结果，请先执行回测。')
+
+
+def render_arbitrage_overview():
+    """套利系统 · 概览（仅套利内容）"""
+    arb = load_json_safe(RESULTS_DIR / 'results_summary.json', {})
+    st.markdown('<div class="section-title">套利系统 · 概览</div>', unsafe_allow_html=True)
+    arb_ret = arb.get('最终收益率(%)', 0)
+    arb_kpi_class = 'positive' if arb_ret >= 0 else 'negative'
+    st.markdown(f'''
+    <div class="kpi-grid">
+        <div class="kpi-card {arb_kpi_class}"><div class="kpi-label">套利收益率</div><div class="kpi-value">{arb_ret:.2f}%</div></div>
+        <div class="kpi-card"><div class="kpi-label">套利交易次数</div><div class="kpi-value">{arb.get("总交易次数", 0)}</div></div>
+    </div>''', unsafe_allow_html=True)
+    col_left, col_right = st.columns([1, 1])
+    with col_left:
+        st.markdown('<div class="card-wrap"><h3>套利系统 · 说明</h3></div>', unsafe_allow_html=True)
+        st.info('套利回测请在「回测」页配置日期并点击「执行套利回测」，结果在「结果」页查看。')
+        if arb:
+            st.metric('当前套利收益率', f"{arb.get('最终收益率(%)', 0):.2f}%")
+            st.metric('套利交易次数', arb.get('总交易次数', 0))
+    with col_right:
+        st.markdown('<div class="card-wrap"><h3>套利 · 最近结果摘要</h3></div>', unsafe_allow_html=True)
+        if arb:
+            st.metric('最终收益率', f"{arb.get('最终收益率(%)', 0):.2f}%")
+            st.metric('总交易次数', arb.get('总交易次数', 0))
+            if arb.get('计算时间'):
+                st.caption(f"计算时间: {arb.get('计算时间', '-')}")
+        else:
+            st.info('暂无套利结果摘要，请先执行套利回测。')
 
 
 def _default_strategy_from_last():
@@ -267,13 +285,34 @@ def run_script(config_path: Path):
             st.error(str(e))
 
 
-def render_backtest():
-    is_martin = st.session_state.get('strategy', 'martin') == 'martin'
-    if not is_martin:
-        st.markdown('<div class="section-title">套利策略</div>', unsafe_allow_html=True)
-        st.info('套利策略回测需在本地运行 **method/logic.py** 或对应脚本，本页仅支持马丁双向策略的一键回测。结果将写入 results/，可在「结果」页选择套利策略查看。')
+def run_arbitrage_script(config_path: Path):
+    """执行套利策略回测：运行 method/logic.py --config。"""
+    script_path = ARBITRAGE_DIR / 'method' / 'logic.py'
+    if not script_path.exists():
+        st.error(f'未找到脚本: {script_path}')
         return
-    st.markdown('<div class="section-title">数据与策略配置 · 执行马丁双向回测</div>', unsafe_allow_html=True)
+    with st.spinner('套利回测运行中…'):
+        try:
+            r = subprocess.run(
+                [sys.executable, str(script_path), '--config', str(config_path)],
+                cwd=str(ARBITRAGE_DIR), capture_output=True, text=True, timeout=600, encoding='utf-8', errors='replace',
+            )
+            if r.returncode == 0:
+                st.success('套利回测完成，请到「结果」页查看。')
+                with st.expander('运行日志'):
+                    st.code(r.stdout[-3500:] if len(r.stdout) > 3500 else r.stdout)
+            else:
+                st.error('套利回测失败')
+                st.code(r.stderr or r.stdout)
+        except subprocess.TimeoutExpired:
+            st.error('套利回测超时（10 分钟）')
+        except Exception as e:
+            st.error(str(e))
+
+
+def render_martin_backtest():
+    """马丁策略 · 回测（仅马丁内容）"""
+    st.markdown('<div class="section-title">马丁策略 · 数据与策略配置 · 执行马丁双向回测</div>', unsafe_allow_html=True)
     last_summary = load_json_safe(RESULTS_DIR / 'martin_bidirectional_summary.json', {})
     # 默认值来自 config，上次回测结果覆盖
     martin_data_defaults = {**getattr(config, 'MARTIN_DATA_CONFIG', {}), 'data_dir': config.DATA_DIR}
@@ -338,24 +377,52 @@ def render_backtest():
     st.caption('配置写入 results/run_config.json，回测脚本通过 --config 读取。')
 
 
-def render_results():
-    is_martin = st.session_state.get('strategy', 'martin') == 'martin'
-    st.markdown(f'<div class="section-title">{"马丁策略" if is_martin else "套利策略"} · 结果</div>', unsafe_allow_html=True)
+def render_arbitrage_backtest():
+    """套利系统 · 回测（仅套利内容）"""
+    st.markdown('<div class="section-title">套利系统 · 数据配置与一键回测</div>', unsafe_allow_html=True)
+    arb_summary = load_json_safe(RESULTS_DIR / 'results_summary.json', {})
+    last_data = {'start_date': '2025-11-24', 'end_date': '2025-12-07', 'data_dir': config.DATA_DIR}
+    run_cfg = load_json_safe(RESULTS_DIR / 'run_config.json', {})
+    data_cfg = run_cfg.get('data_config', {})
+    last_data = {**last_data, **data_cfg}
+    st.markdown('<div class="card-wrap"><h3>数据配置</h3></div>', unsafe_allow_html=True)
+    start_date = st.text_input('开始日期', value=last_data.get('start_date', '2025-11-24'), key='arb_start', help='套利使用 OKX/Binance 本地 CSV 数据，请确保 data 目录下有对应日期范围的 K 线与资金费率文件')
+    end_date = st.text_input('结束日期', value=last_data.get('end_date', '2025-12-07'), key='arb_end')
+    data_dir = st.text_input('数据目录', value=last_data.get('data_dir', config.DATA_DIR), key='arb_data_dir')
+    st.caption('套利回测使用 data 目录下 OKX_1m_kline、Binance_1m_kline、OKX_funding_rate、Binance_funding_rate 中的 BTC 数据。')
+    st.markdown('---')
+    if st.button('执行套利回测', type='primary', key='run_arb_btn'):
+        data_config = {
+            'start_date': start_date.strip() or '2025-11-24',
+            'end_date': end_date.strip() or '2025-12-07',
+            'data_dir': data_dir.strip() or config.DATA_DIR,
+        }
+        config_path = RESULTS_DIR / 'run_config.json'
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump({'run_mode': 'backtest', 'data_config': data_config}, f, ensure_ascii=False, indent=2)
+        run_arbitrage_script(config_path)
 
-    if is_martin:
-        r1, r2, r3 = st.tabs(['马丁摘要', '交易记录', '图表'])
-        with r1:
-            _render_martin_summary()
-        with r2:
-            _render_martin_trades()
-        with r3:
-            _render_martin_chart()
-    else:
-        r1, r2 = st.tabs(['套利结果', '图表'])
-        with r1:
-            _render_arbitrage_summary()
-        with r2:
-            _render_arbitrage_chart()
+
+def render_martin_results():
+    """马丁策略 · 结果（仅马丁内容）"""
+    st.markdown('<div class="section-title">马丁策略 · 结果</div>', unsafe_allow_html=True)
+    r1, r2, r3 = st.tabs(['马丁摘要', '交易记录', '图表'])
+    with r1:
+        _render_martin_summary()
+    with r2:
+        _render_martin_trades()
+    with r3:
+        _render_martin_chart()
+
+
+def render_arbitrage_results():
+    """套利系统 · 结果（仅套利内容）"""
+    st.markdown('<div class="section-title">套利系统 · 结果</div>', unsafe_allow_html=True)
+    r1, r2 = st.tabs(['套利结果', '图表'])
+    with r1:
+        _render_arbitrage_summary()
+    with r2:
+        _render_arbitrage_chart()
 
 
 def _render_martin_summary():
@@ -649,6 +716,219 @@ def _build_interactive_chart(chart_data: dict):
     fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(255,255,255,0.06)', zeroline=False)
     fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(255,255,255,0.06)', zeroline=False)
     return fig
+
+
+# ---------- 实盘：马丁策略进程 PID 文件 ----------
+REALTIME_MARTIN_PID_FILE = RESULTS_DIR / 'realtime_martin.pid'
+
+
+def _is_pid_alive(pid: int) -> bool:
+    """检查进程是否存在（跨平台）"""
+    if pid <= 0:
+        return False
+    try:
+        if os.name == 'nt':
+            # Windows: 用 tasklist 检查
+            r = subprocess.run(
+                ['tasklist', '/FI', f'PID eq {pid}', '/NH'],
+                capture_output=True, text=True, timeout=5, encoding='utf-8', errors='replace'
+            )
+            return str(pid) in (r.stdout or '')
+        os.kill(pid, 0)
+        return True
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return False
+
+
+def _get_realtime_martin_pid() -> int | None:
+    """读取实盘马丁进程 PID，若文件不存在或进程已死返回 None"""
+    if not REALTIME_MARTIN_PID_FILE.exists():
+        return None
+    try:
+        with open(REALTIME_MARTIN_PID_FILE, 'r', encoding='utf-8') as f:
+            pid = int(f.read().strip())
+        if _is_pid_alive(pid):
+            return pid
+        REALTIME_MARTIN_PID_FILE.unlink(missing_ok=True)
+        return None
+    except (ValueError, OSError):
+        REALTIME_MARTIN_PID_FILE.unlink(missing_ok=True)
+        return None
+
+
+def _render_realtime_live_chart(history: list):
+    """根据实盘历史数据绘制价格与累计盈亏双轴图"""
+    if not history or len(history) < 2:
+        return
+    times = [h.get('t', '') for h in history]
+    prices = [h.get('price') for h in history]
+    profits = [h.get('total_profit') for h in history]
+    if HAS_PLOTLY and go is not None and make_subplots is not None:
+        try:
+            fig = make_subplots(rows=2, cols=1, shared_xaxes=True, vertical_spacing=0.08,
+                               subplot_titles=('价格', '累计盈亏 (USDT)'), row_heights=[0.55, 0.45])
+            fig.add_trace(go.Scatter(x=times, y=prices, name='价格', line=dict(color='#94a3b8', width=1.5)),
+                         row=1, col=1)
+            fig.add_trace(go.Scatter(x=times, y=profits, name='已实现盈亏', fill='tozeroy', line=dict(color='#6b8cae', width=1.5)),
+                         row=2, col=1)
+            fig.update_layout(height=320, margin=dict(t=36, b=24, l=48, r=24), showlegend=True,
+                              template='plotly_dark', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                              font=dict(color='#d8dce4', size=10), legend=dict(orientation='h', y=1.06))
+            fig.update_xaxes(showgrid=True, gridcolor='rgba(255,255,255,0.06)', tickangle=-30)
+            fig.update_yaxes(showgrid=True, gridcolor='rgba(255,255,255,0.06)')
+            st.plotly_chart(fig, use_container_width=True, key='realtime_live_chart', config={'displayModeBar': True, 'displaylogo': False})
+        except Exception as e:
+            st.caption(f'走势图渲染失败: {e}')
+    else:
+        # 无 Plotly 时用 DataFrame 表格展示最近一段
+        df = pd.DataFrame(history[-50:])
+        st.dataframe(df, use_container_width=True, hide_index=True)
+
+def _stop_realtime_martin() -> tuple[bool, str]:
+    """停止马丁实盘进程。返回 (成功, 消息)"""
+    pid = _get_realtime_martin_pid()
+    if pid is None:
+        return False, '未检测到运行中的马丁实盘进程'
+    try:
+        if os.name == 'nt':
+            subprocess.run(['taskkill', '/PID', str(pid), '/F'], capture_output=True, timeout=10)
+        else:
+            os.kill(pid, signal.SIGTERM)
+        REALTIME_MARTIN_PID_FILE.unlink(missing_ok=True)
+        return True, f'已发送停止信号 (PID {pid})'
+    except Exception as e:
+        return False, str(e)
+
+
+def render_martin_realtime():
+    """马丁策略 · 实盘（仅马丁内容，不含套利说明）"""
+    st.markdown('<div class="section-title">马丁策略 · 实盘操作</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-wrap"><h3>马丁策略 · 实时/模拟盘</h3></div>', unsafe_allow_html=True)
+    pid = _get_realtime_martin_pid()
+    if pid is not None:
+        st.success(f'**状态：运行中**（PID: {pid}）')
+        if st.button('停止马丁实盘', type='primary', key='stop_martin_realtime'):
+            ok, msg = _stop_realtime_martin()
+            if ok:
+                st.success(msg)
+                st.rerun()
+            else:
+                st.error(msg)
+    else:
+        st.info('**状态：已停止**。下方配置后点击「启动马丁实盘」即可运行。')
+    st.markdown('<div class="card-wrap"><h3>实盘过程</h3></div>', unsafe_allow_html=True)
+    live_path = RESULTS_DIR / 'realtime_martin_live.json'
+    if pid is not None:
+        if st.button('🔄 刷新实盘数据', key='refresh_realtime_live'):
+            st.rerun()
+        st.caption('实盘运行中会持续写入数据，点击「刷新实盘数据」查看最新。')
+    live_data = load_json_safe(live_path, {})
+    snapshot = live_data.get('snapshot') or {}
+    history = live_data.get('history') or []
+    if snapshot:
+        ts_str = snapshot.get('timestamp_iso', '')
+        price_val = snapshot.get('price') or 0
+        total_profit = snapshot.get('total_profit') or 0
+        unrealized = snapshot.get('unrealized_pnl') or 0
+        buy_lv = snapshot.get('buy_level', 0)
+        sell_lv = snapshot.get('sell_level', 0)
+        buy_cnt = snapshot.get('buy_positions_count', 0)
+        sell_cnt = snapshot.get('sell_positions_count', 0)
+        pnl_class = 'positive' if total_profit >= 0 else 'negative'
+        st.markdown(f'''
+        <div class="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">当前价格</div><div class="kpi-value">{price_val:,.2f}</div></div>
+            <div class="kpi-card"><div class="kpi-label">买层 / 卖层</div><div class="kpi-value">{buy_lv} / {sell_lv}</div></div>
+            <div class="kpi-card {pnl_class}"><div class="kpi-label">已实现盈亏 (USDT)</div><div class="kpi-value">{total_profit:,.2f}</div></div>
+            <div class="kpi-card"><div class="kpi-label">未实现盈亏 (USDT)</div><div class="kpi-value">{unrealized:,.2f}</div></div>
+            <div class="kpi-card"><div class="kpi-label">买持仓数 / 卖持仓数</div><div class="kpi-value">{buy_cnt} / {sell_cnt}</div></div>
+            <div class="kpi-card"><div class="kpi-label">最后更新</div><div class="kpi-value" style="font-size:0.9rem;">{ts_str}</div></div>
+        </div>''', unsafe_allow_html=True)
+        if snapshot.get('base_price') is not None:
+            st.caption(f"基准价: {snapshot['base_price']:.2f}  |  交易次数: {snapshot.get('trade_count', 0)}")
+        if len(history) >= 2:
+            _render_realtime_live_chart(history)
+    else:
+        st.info('暂无实盘过程数据。请先**启动马丁实盘**，等待至少一次轮询后点击「刷新实盘数据」查看。')
+    st.markdown('---')
+    st.markdown('<div class="card-wrap"><h3>启动 / 停止</h3></div>', unsafe_allow_html=True)
+    last_summary = load_json_safe(RESULTS_DIR / 'martin_bidirectional_summary.json', {})
+    martin_data_defaults = {**getattr(config, 'MARTIN_DATA_CONFIG', {}), 'data_dir': config.DATA_DIR}
+    martin_strategy_defaults = dict(getattr(config, 'MARTIN_STRATEGY_CONFIG', {}))
+    last_data = {**martin_data_defaults, **(last_summary.get('数据配置') or {})}
+    last_strategy = {**martin_strategy_defaults, **(last_summary.get('策略参数') or {})}
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        st.markdown('**数据与运行**')
+        rt_exchange = st.selectbox('交易所', ['okx', 'binance'], format_func=lambda x: 'OKX' if x == 'okx' else 'Binance', index=['okx', 'binance'].index(last_data.get('exchange', 'okx')), key='rt_ex')
+        default_sym = last_data.get('symbol') or ('BTC-USDT-SWAP' if rt_exchange == 'okx' else 'BTCUSDT')
+        rt_symbol = st.text_input('交易对', value=default_sym, key='rt_sym')
+        rt_poll = st.number_input('轮询间隔（秒）', min_value=5, max_value=300, value=int(getattr(config, 'POLL_INTERVAL_SECONDS', 60)), key='rt_poll')
+        rt_paper = st.checkbox('模拟盘下单（测试环境）', value=getattr(config, 'MARTIN_PAPER_TRADE', True), help='勾选：在 OKX 沙箱 / Binance 测试网 下单；不勾选：仅输出信号，不下单。', key='rt_paper')
+    with col2:
+        st.markdown('**策略参数（与回测一致）**')
+        rt_base_size = st.number_input('初始手数', min_value=0.001, max_value=1.0, value=float(last_strategy.get('base_size', 0.01)), step=0.001, format='%.3f', key='rt_bs')
+        rt_tp = st.slider('止盈 %', 0.1, 3.0, float(last_strategy.get('take_profit_pct', 0.005)) * 100, 0.1, key='rt_tp') / 100.0
+        rt_sl = st.slider('止损 %', 1.0, 30.0, float(last_strategy.get('stop_loss_pct', 0.1)) * 100, 0.5, key='rt_sl') / 100.0
+    if pid is None and st.button('启动马丁实盘', type='primary', key='start_martin_realtime'):
+        data_config = {
+            'exchange': rt_exchange, 'symbol': rt_symbol.strip() or default_sym, 'interval': last_data.get('interval', '1m'),
+            'start_date': last_data.get('start_date', '2026-02-01'), 'end_date': last_data.get('end_date', '2026-02-02'),
+            'data_dir': config.DATA_DIR, 'binance_futures': last_data.get('binance_futures', False), 'proxies': last_data.get('proxies'),
+        }
+        strategy_config = {
+            'base_price': None, 'grid_spacing_mode': last_strategy.get('grid_spacing_mode', 'atr'),
+            'grid_spacing_pct': last_strategy.get('grid_spacing_pct', 0.01), 'grid_spacing_fixed': last_strategy.get('grid_spacing_fixed', 100.0),
+            'atr_period': last_strategy.get('atr_period', 14), 'atr_multiplier': last_strategy.get('atr_multiplier', 1.0),
+            'base_size': rt_base_size, 'multiplier': last_strategy.get('multiplier', 2.0), 'max_martin_levels': last_strategy.get('max_martin_levels', 8),
+            'normal_levels': last_strategy.get('normal_levels', 3), 'max_position_pct': last_strategy.get('max_position_pct', 0.9),
+            'take_profit_pct': rt_tp, 'stop_loss_pct': rt_sl, 'take_profit_mode': last_strategy.get('take_profit_mode', 'unified'),
+            'dynamic_base': last_strategy.get('dynamic_base', True), 'total_capital': last_strategy.get('total_capital', 10000), 'fee_rate': last_strategy.get('fee_rate', 0.0005),
+        }
+        run_cfg = {'run_mode': 'realtime', 'paper_trade': rt_paper, 'poll_interval_seconds': rt_poll, 'data_config': data_config, 'strategy_config': strategy_config}
+        config_path = RESULTS_DIR / 'run_config.json'
+        with open(config_path, 'w', encoding='utf-8') as f:
+            json.dump(run_cfg, f, ensure_ascii=False, indent=2)
+        script_path = ARBITRAGE_DIR / 'method' / 'martin_bidirectional.py'
+        if not script_path.exists():
+            st.error(f'未找到脚本: {script_path}')
+        else:
+            try:
+                proc = subprocess.Popen(
+                    [sys.executable, str(script_path), '--config', str(config_path)],
+                    cwd=str(ARBITRAGE_DIR), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == 'nt' else 0,
+                )
+                with open(REALTIME_MARTIN_PID_FILE, 'w', encoding='utf-8') as pf:
+                    pf.write(str(proc.pid))
+                st.success(f'马丁实盘已启动（PID: {proc.pid}）。模拟盘={rt_paper}，轮询={rt_poll} 秒。')
+                st.rerun()
+            except Exception as e:
+                st.error(f'启动失败: {e}')
+    st.caption('实盘使用 config 中的交易所 API。真实实盘请修改 config 并自行承担风险。')
+    log_path = Path(getattr(config, 'LOG_CONFIG', {}).get('file', str(ARBITRAGE_DIR / 'trading.log')))
+    if not log_path.is_absolute():
+        log_path = ARBITRAGE_DIR / log_path
+    with st.expander('最近交易/运行日志'):
+        if log_path.exists():
+            try:
+                with open(log_path, 'r', encoding='utf-8', errors='replace') as f:
+                    lines = f.readlines()
+                st.text(''.join(lines[-80:]) if len(lines) > 80 else ''.join(lines))
+            except Exception as e:
+                st.caption(f'无法读取: {e}')
+        else:
+            st.caption('暂无日志文件')
+
+
+def render_arbitrage_realtime():
+    """套利系统 · 实盘（仅套利说明，无马丁内容）"""
+    st.markdown('<div class="section-title">套利系统 · 实盘</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card-wrap"><h3>套利策略 · 实时交易</h3></div>', unsafe_allow_html=True)
+    st.info(
+        '套利实盘需在项目目录下运行 Python：从 method.logic 与 utils.realtime_trading 启动 RealtimeArbitrageTrader，'
+        '详见「实时交易说明.md」。本页暂不提供套利一键启停。'
+    )
 
 
 def render_config():
