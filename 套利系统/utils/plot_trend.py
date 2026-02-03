@@ -4,6 +4,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from glob import glob
 import json
+import os
+import sys
+
+# 添加父目录到路径，以便导入config
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
+
+# 全项目统一使用北京时间
+BEIJING_TZ = datetime.timezone(datetime.timedelta(hours=8))
 
 # 设置matplotlib支持中文显示
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS']  # 用来正常显示中文标签
@@ -84,10 +93,10 @@ def load_binance_funding(filename):
     return fundings
 
 # 更新路径指向data文件夹中的子文件夹
-glob_okx_price = glob("套利系统/data/OKX_1m_kline/BTC-USDT-candlesticks-2025-*.csv")
-glob_binance_price = glob("套利系统/data/Binance_1m_kline/BTCUSDT-1m-2025-*.csv")
-glob_okx_funding = glob("套利系统/data/OKX_funding_rate/allswap-fundingrates-2025-*.csv")
-file_binance_funding = "套利系统/data/Binance_funding_rate/Funding Rate History_BTCUSDT Perpetual_2025-12-09.csv"
+glob_okx_price = glob(os.path.join(config.DATA_DIR, "OKX_1m_kline", "BTC-USDT-candlesticks-2025-*.csv"))
+glob_binance_price = glob(os.path.join(config.DATA_DIR, "Binance_1m_kline", "BTCUSDT-1m-2025-*.csv"))
+glob_okx_funding = glob(os.path.join(config.DATA_DIR, "OKX_funding_rate", "allswap-fundingrates-2025-*.csv"))
+file_binance_funding = os.path.join(config.DATA_DIR, "Binance_funding_rate", "Funding Rate History_BTCUSDT Perpetual_2025-12-09.csv")
 
 # 批量读取所有数据文件
 okx_prices, binance_prices = [], []
@@ -118,8 +127,8 @@ df['okx_price'] = df_okx_price['price']
 df['binance_funding'] = df_binance_funding['funding_rate']
 df['okx_funding'] = df_okx_funding['funding_rate']
 
-# 时间戳转datetime
-df['datetime'] = pd.to_datetime(df.index, unit='s')
+# 时间戳转 datetime（北京时间）
+df['datetime'] = pd.to_datetime(df.index, unit='s', utc=True).dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
 
 # 筛选时间段
 mask = (df['datetime'] >= pd.Timestamp('2025-11-24')) & (df['datetime'] <= pd.Timestamp('2025-12-07 16:00:00'))
@@ -142,15 +151,16 @@ plt.plot(df['datetime'], df['binance_price'], label='Binance 价格')
 plt.plot(df['datetime'], df['okx_price'], label='OKX 价格')
 # 标注开/平仓点（使用 OKX 价格作为锚点）
 try:
-    with open('套利系统/arbitrage_positions.json', 'r', encoding='utf-8') as f:
+    positions_file = os.path.join(config.RESULTS_DIR, 'arbitrage_positions.json')
+    with open(positions_file, 'r', encoding='utf-8') as f:
         positions = json.load(f)
     if positions:
         pos_df = pd.DataFrame(positions)
         # 准备时间戳列
         pos_df['open_ts'] = pd.to_numeric(pos_df['开仓时间戳'], errors='coerce')
         pos_df['close_ts'] = pos_df['平仓信息'].apply(lambda x: pd.to_numeric(x.get('平仓时间戳'), errors='coerce') if x and isinstance(x, dict) else None)
-        pos_df['open_dt'] = pd.to_datetime(pos_df['open_ts'], unit='s', errors='coerce')
-        pos_df['close_dt'] = pd.to_datetime(pos_df['close_ts'], unit='s', errors='coerce')
+        pos_df['open_dt'] = pd.to_datetime(pos_df['open_ts'], unit='s', utc=True, errors='coerce').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+        pos_df['close_dt'] = pd.to_datetime(pos_df['close_ts'], unit='s', utc=True, errors='coerce').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
 
         # 准备价格参考数据
         price_ref = df[['datetime', 'okx_price']].dropna().copy()
@@ -200,7 +210,8 @@ plt.ylabel('资金费率')
 # 收益率变化趋势（按平仓时间累积收益率）
 plt.subplot(3, 1, 3)
 try:
-    with open('套利系统/arbitrage_positions.json', 'r', encoding='utf-8') as f:
+    positions_file = os.path.join(config.RESULTS_DIR, 'arbitrage_positions.json')
+    with open(positions_file, 'r', encoding='utf-8') as f:
         positions_for_ret = json.load(f)
     pos_df_ret = pd.DataFrame(positions_for_ret)
     if not pos_df_ret.empty:
@@ -260,7 +271,7 @@ try:
         # 过滤超出价格数据时间范围的记录，避免在缺数据段计算收益
         ts_min, ts_max = df.index.min(), df.index.max()
         pos_df_ret = pos_df_ret[(pos_df_ret['close_ts'] >= ts_min) & (pos_df_ret['close_ts'] <= ts_max)]
-        pos_df_ret['close_dt'] = pd.to_datetime(pos_df_ret['close_ts'], unit='s')
+        pos_df_ret['close_dt'] = pd.to_datetime(pos_df_ret['close_ts'], unit='s', utc=True, errors='coerce').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
         pos_df_ret = pos_df_ret.dropna(subset=['close_dt'])
         pos_df_ret['price_ret'] = pos_df_ret.apply(calc_price_return, axis=1)
         pos_df_ret['funding_ret'] = pos_df_ret.apply(lambda r: calc_funding_return(r, funding_df), axis=1)

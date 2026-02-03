@@ -1,21 +1,16 @@
 {
-  "策略类型": "双向马丁网格",
-  "最终盈亏": 157.9832004999988,
-  "累计手续费": 50.0817995,
-  "总交易次数": 46,
-  "开买单次数": 18,
-  "开卖单次数": 21,
-  "平仓次数": 7,
-  "数据配置": {
+  "run_mode": "backtest",
+  "data_config": {
     "exchange": "okx",
     "symbol": "BTC-USDT-SWAP",
     "interval": "1m",
     "start_date": "2026-02-01",
     "end_date": "2026-02-02",
-    "data_dir": "c:\\Users\\86132\\Desktop\\PGPortfolio-master\\套利系统\\data",
-    "binance_futures": false
+    "data_dir": "C:\\Users\\86132\\Desktop\\PGPortfolio-master\\套利系统\\data",
+    "binance_futures": false,
+    "proxies": null
   },
-  "策略参数": {
+  "strategy_config": {
     "base_price": null,
     "grid_spacing_mode": "atr",
     "grid_spacing_pct": 0.01,
@@ -33,10 +28,5 @@
     "dynamic_base": true,
     "total_capital": 10000,
     "fee_rate": 0.0005
-  },
-  "回测时间": "2026-02-03 20:32:39",
-  "数据时间范围": {
-    "开始": "2026-02-01 00:00:00",
-    "结束": "2026-02-02 22:39:00"
   }
 }

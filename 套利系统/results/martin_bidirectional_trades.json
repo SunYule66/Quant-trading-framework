@@ -1,361 +1,423 @@
 [
   {
-    "action": "open_buy",
-    "price": 87902.68,
+    "action": "open_sell",
+    "price": 81036.0,
     "size": 0.01,
     "level": 1,
-    "timestamp": 1763949960,
-    "grid_line": 87647.81009999999
+    "timestamp": 1769875620,
+    "grid_line": 81132.35211145222,
+    "fee": 0.40518000000000004
   },
   {
     "action": "open_sell",
-    "price": 85899.3,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1763976300,
-    "grid_line": 85912.2099
-  },
-  {
-    "action": "open_buy",
-    "price": 88556.89,
+    "price": 80699.1,
     "size": 0.01,
     "level": 2,
-    "timestamp": 1764007620,
-    "grid_line": 88515.6102
+    "timestamp": 1769875740,
+    "grid_line": 80927.88068199412,
+    "fee": 0.40349550000000006
   },
   {
-    "action": "open_buy",
-    "price": 89415.45,
+    "action": "open_sell",
+    "price": 80593.9,
     "size": 0.01,
     "level": 3,
-    "timestamp": 1764178920,
-    "grid_line": 89383.41029999999
+    "timestamp": 1769876160,
+    "grid_line": 80744.33913186085,
+    "fee": 0.4029695
   },
   {
     "action": "open_buy",
-    "price": 90318.73,
+    "price": 81730.4,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1769876400,
+    "grid_line": 81608.50928219945,
+    "fee": 0.408652
+  },
+  {
+    "action": "open_sell",
+    "price": 80247.6,
     "size": 0.02,
     "level": 4,
-    "timestamp": 1764180960,
-    "grid_line": 90251.2104
+    "timestamp": 1769878020,
+    "grid_line": 80542.69027854127,
+    "fee": 0.8024760000000001
+  },
+  {
+    "action": "open_sell",
+    "price": 80180.0,
+    "size": 0.04,
+    "level": 5,
+    "timestamp": 1769878260,
+    "grid_line": 80259.21137239096,
+    "fee": 1.6036000000000001
   },
   {
     "action": "close_all",
-    "price": 90832.35,
-    "timestamp": 1764205500,
+    "price": 79405.7,
+    "timestamp": 1769879280,
     "reason": "unified_profit",
-    "realized_pnl": 27.162200000000453,
-    "buy_count": 4,
-    "sell_count": 1
-  },
-  {
-    "action": "open_buy",
-    "price": 91757.98,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764211320,
-    "grid_line": 91740.6735
-  },
-  {
-    "action": "close_all",
-    "price": 92446.91,
-    "timestamp": 1764337620,
-    "reason": "unified_profit",
-    "realized_pnl": 6.889300000000076,
+    "realized_pnl": 65.68200000000041,
     "buy_count": 1,
-    "sell_count": 0
+    "sell_count": 5,
+    "fee": 3.9702850000000005
   },
   {
     "action": "open_sell",
-    "price": 91388.56,
+    "price": 78806.4,
     "size": 0.01,
     "level": 1,
-    "timestamp": 1764346980,
-    "grid_line": 91522.4409
-  },
-  {
-    "action": "close_all",
-    "price": 90893.58,
-    "timestamp": 1764349200,
-    "reason": "unified_profit",
-    "realized_pnl": 4.94979999999996,
-    "buy_count": 0,
-    "sell_count": 1
-  },
-  {
-    "action": "open_buy",
-    "price": 91883.8,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764508980,
-    "grid_line": 91802.51580000001
+    "timestamp": 1769879460,
+    "grid_line": 79086.7564504534,
+    "fee": 0.394032
   },
   {
     "action": "open_sell",
-    "price": 89816.17,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764547440,
-    "grid_line": 89984.6442
-  },
-  {
-    "action": "open_sell",
-    "price": 89059.69,
+    "price": 78486.6,
     "size": 0.01,
     "level": 2,
-    "timestamp": 1764547800,
-    "grid_line": 89075.7084
+    "timestamp": 1769880780,
+    "grid_line": 78833.68230327383,
+    "fee": 0.39243300000000003
   },
   {
     "action": "open_sell",
-    "price": 88083.84,
+    "price": 78553.1,
     "size": 0.01,
     "level": 3,
-    "timestamp": 1764549120,
-    "grid_line": 88166.7726
+    "timestamp": 1769880840,
+    "grid_line": 78560.53249384569,
+    "fee": 0.39276550000000005
   },
   {
     "action": "open_sell",
-    "price": 87216.23,
+    "price": 78719.8,
     "size": 0.02,
     "level": 4,
-    "timestamp": 1764550380,
-    "grid_line": 87257.8368
-  },
-  {
-    "action": "close_all",
-    "price": 86633.09,
-    "timestamp": 1764556680,
-    "reason": "unified_profit",
-    "realized_pnl": 29.759999999999998,
-    "buy_count": 1,
-    "sell_count": 4
+    "timestamp": 1769882820,
+    "grid_line": 78757.34737650496,
+    "fee": 0.7871980000000001
   },
   {
     "action": "open_sell",
-    "price": 85746.78,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764563100,
-    "grid_line": 85766.7591
+    "price": 78592.3,
+    "size": 0.04,
+    "level": 5,
+    "timestamp": 1769883240,
+    "grid_line": 78677.29957262955,
+    "fee": 1.571846
   },
   {
     "action": "close_all",
-    "price": 85307.1,
-    "timestamp": 1764593160,
+    "price": 78231.8,
+    "timestamp": 1769883600,
     "reason": "unified_profit",
-    "realized_pnl": 4.3967999999999305,
+    "realized_pnl": 35.68699999999997,
     "buy_count": 0,
-    "sell_count": 1
+    "sell_count": 5,
+    "fee": 3.5204310000000008
   },
   {
     "action": "open_buy",
-    "price": 86268.0,
+    "price": 78397.7,
     "size": 0.01,
     "level": 1,
-    "timestamp": 1764597840,
-    "grid_line": 86160.171
-  },
-  {
-    "action": "open_sell",
-    "price": 84428.34,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764603240,
-    "grid_line": 84454.02900000001
+    "timestamp": 1769884140,
+    "grid_line": 78397.18558127046,
+    "fee": 0.3919885
   },
   {
     "action": "open_buy",
-    "price": 87267.76,
+    "price": 78653.3,
     "size": 0.01,
     "level": 2,
-    "timestamp": 1764637560,
-    "grid_line": 87013.24200000001
+    "timestamp": 1769884200,
+    "grid_line": 78579.93036521655,
+    "fee": 0.3932665
   },
   {
-    "action": "open_buy",
-    "price": 87981.36,
+    "action": "open_sell",
+    "price": 77701.2,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1769884620,
+    "grid_line": 78051.01407313143,
+    "fee": 0.38850599999999996
+  },
+  {
+    "action": "open_sell",
+    "price": 77779.7,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1769884680,
+    "grid_line": 77823.5404215298,
+    "fee": 0.38889850000000004
+  },
+  {
+    "action": "open_sell",
+    "price": 77512.0,
     "size": 0.01,
     "level": 3,
-    "timestamp": 1764684420,
-    "grid_line": 87866.31300000001
+    "timestamp": 1769884740,
+    "grid_line": 77558.30272998793,
+    "fee": 0.38756
   },
   {
-    "action": "open_buy",
-    "price": 88739.99,
+    "action": "open_sell",
+    "price": 77150.4,
     "size": 0.02,
     "level": 4,
-    "timestamp": 1764685560,
-    "grid_line": 88719.384
+    "timestamp": 1769884800,
+    "grid_line": 77258.37480855649,
+    "fee": 0.771504
   },
   {
     "action": "close_all",
-    "price": 89400.39,
-    "timestamp": 1764687600,
+    "price": 75702.1,
+    "timestamp": 1769884980,
     "reason": "unified_profit",
-    "realized_pnl": 30.32799999999989,
-    "buy_count": 4,
-    "sell_count": 1
+    "realized_pnl": 31.36399999999965,
+    "buy_count": 2,
+    "sell_count": 4,
+    "fee": 2.6495735000000007
   },
   {
     "action": "open_buy",
-    "price": 90606.27,
+    "price": 77539.9,
     "size": 0.01,
     "level": 1,
-    "timestamp": 1764688320,
-    "grid_line": 90294.3939
-  },
-  {
-    "action": "close_all",
-    "price": 91081.99,
-    "timestamp": 1764690780,
-    "reason": "unified_profit",
-    "realized_pnl": 4.757200000000012,
-    "buy_count": 1,
-    "sell_count": 0
+    "timestamp": 1769885040,
+    "grid_line": 76171.81757401096,
+    "fee": 0.38769950000000003
   },
   {
     "action": "open_buy",
-    "price": 92000.0,
+    "price": 77866.8,
     "size": 0.01,
-    "level": 1,
-    "timestamp": 1764699480,
-    "grid_line": 91992.80990000001
-  },
-  {
-    "action": "close_all",
-    "price": 92580.59,
-    "timestamp": 1764727440,
-    "reason": "unified_profit",
-    "realized_pnl": 5.805899999999965,
-    "buy_count": 1,
-    "sell_count": 0
+    "level": 2,
+    "timestamp": 1769885100,
+    "grid_line": 76692.18978030604,
+    "fee": 0.389334
   },
   {
     "action": "open_buy",
-    "price": 93553.53,
+    "price": 77846.3,
     "size": 0.01,
-    "level": 1,
-    "timestamp": 1764738420,
-    "grid_line": 93506.3959
+    "level": 3,
+    "timestamp": 1769885160,
+    "grid_line": 77185.61790828343,
+    "fee": 0.38923150000000006
+  },
+  {
+    "action": "open_buy",
+    "price": 78073.7,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1769885220,
+    "grid_line": 77658.950743589,
+    "fee": 0.780737
+  },
+  {
+    "action": "open_buy",
+    "price": 77968.0,
+    "size": 0.04,
+    "level": 5,
+    "timestamp": 1769885400,
+    "grid_line": 77958.67902863749,
+    "fee": 1.55936
   },
   {
     "action": "close_all",
-    "price": 94070.91,
-    "timestamp": 1764802860,
+    "price": 78312.0,
+    "timestamp": 1769886540,
     "reason": "unified_profit",
-    "realized_pnl": 5.173800000000047,
-    "buy_count": 1,
-    "sell_count": 0
+    "realized_pnl": 35.35600000000006,
+    "buy_count": 5,
+    "sell_count": 0,
+    "fee": 3.52404
   },
   {
     "action": "open_sell",
-    "price": 93005.73,
+    "price": 78000.1,
     "size": 0.01,
     "level": 1,
-    "timestamp": 1764807120,
-    "grid_line": 93130.2009
+    "timestamp": 1769887020,
+    "grid_line": 78075.46671615599,
+    "fee": 0.3900005
+  },
+  {
+    "action": "open_sell",
+    "price": 77807.7,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1769887320,
+    "grid_line": 77904.88405181511,
+    "fee": 0.3890385
+  },
+  {
+    "action": "open_sell",
+    "price": 77772.3,
+    "size": 0.01,
+    "level": 3,
+    "timestamp": 1769887860,
+    "grid_line": 77802.15691722845,
+    "fee": 0.3888615
+  },
+  {
+    "action": "open_sell",
+    "price": 77553.9,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1769887920,
+    "grid_line": 77605.96570704474,
+    "fee": 0.775539
+  },
+  {
+    "action": "open_sell",
+    "price": 77439.1,
+    "size": 0.04,
+    "level": 5,
+    "timestamp": 1769888100,
+    "grid_line": 77460.61892236576,
+    "fee": 1.548782
   },
   {
     "action": "close_all",
-    "price": 92500.01,
-    "timestamp": 1764853500,
+    "price": 77194.6,
+    "timestamp": 1769891460,
     "reason": "unified_profit",
-    "realized_pnl": 5.0572000000000115,
+    "realized_pnl": 36.928999999999654,
     "buy_count": 0,
-    "sell_count": 1
-  },
-  {
-    "action": "open_sell",
-    "price": 91499.16,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764875580,
-    "grid_line": 91575.00989999999
-  },
-  {
-    "action": "close_all",
-    "price": 90984.03,
-    "timestamp": 1764876060,
-    "reason": "unified_profit",
-    "realized_pnl": 5.151300000000047,
-    "buy_count": 0,
-    "sell_count": 1
+    "sell_count": 5,
+    "fee": 3.4737570000000004
   },
   {
     "action": "open_buy",
-    "price": 91896.93,
+    "price": 77329.7,
     "size": 0.01,
     "level": 1,
-    "timestamp": 1764877020,
-    "grid_line": 91893.8703
-  },
-  {
-    "action": "close_all",
-    "price": 92364.24,
-    "timestamp": 1764881100,
-    "reason": "unified_profit",
-    "realized_pnl": 4.673100000000122,
-    "buy_count": 1,
-    "sell_count": 0
-  },
-  {
-    "action": "open_sell",
-    "price": 91388.92,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764926340,
-    "grid_line": 91440.59760000001
-  },
-  {
-    "action": "close_all",
-    "price": 90806.99,
-    "timestamp": 1764941160,
-    "reason": "unified_profit",
-    "realized_pnl": 5.81929999999993,
-    "buy_count": 0,
-    "sell_count": 1
-  },
-  {
-    "action": "open_sell",
-    "price": 89557.0,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764950820,
-    "grid_line": 89898.9201
-  },
-  {
-    "action": "close_all",
-    "price": 89091.63,
-    "timestamp": 1764951420,
-    "reason": "unified_profit",
-    "realized_pnl": 4.6536999999999535,
-    "buy_count": 0,
-    "sell_count": 1
-  },
-  {
-    "action": "open_sell",
-    "price": 88191.6,
-    "size": 0.01,
-    "level": 1,
-    "timestamp": 1764952920,
-    "grid_line": 88200.71370000001
+    "timestamp": 1769892120,
+    "grid_line": 77326.9603906904,
+    "fee": 0.3866485
   },
   {
     "action": "open_buy",
-    "price": 90182.62,
+    "price": 77471.9,
     "size": 0.01,
-    "level": 1,
-    "timestamp": 1765030620,
-    "grid_line": 89982.5463
+    "level": 2,
+    "timestamp": 1769892240,
+    "grid_line": 77464.59904108854,
+    "fee": 0.38735949999999997
+  },
+  {
+    "action": "open_buy",
+    "price": 77668.6,
+    "size": 0.01,
+    "level": 3,
+    "timestamp": 1769892840,
+    "grid_line": 77571.35754744608,
+    "fee": 0.38834300000000005
+  },
+  {
+    "action": "open_buy",
+    "price": 77764.8,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1769892900,
+    "grid_line": 77696.66172540943,
+    "fee": 0.777648
+  },
+  {
+    "action": "open_buy",
+    "price": 77925.9,
+    "size": 0.04,
+    "level": 5,
+    "timestamp": 1769892960,
+    "grid_line": 77851.3859312788,
+    "fee": 1.558518
   },
   {
     "action": "close_all",
-    "price": 89460.16,
-    "timestamp": "1765123200",
+    "price": 78147.4,
+    "timestamp": 1769895660,
+    "reason": "unified_profit",
+    "realized_pnl": 36.23199999999968,
+    "buy_count": 5,
+    "sell_count": 0,
+    "fee": 3.5166329999999997
+  },
+  {
+    "action": "open_buy",
+    "price": 78322.1,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1769896680,
+    "grid_line": 78247.98174536967,
+    "fee": 0.3916105000000001
+  },
+  {
+    "action": "open_buy",
+    "price": 78358.1,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1769896980,
+    "grid_line": 78352.04920823,
+    "fee": 0.3917905000000001
+  },
+  {
+    "action": "open_sell",
+    "price": 78060.2,
+    "size": 0.01,
+    "level": 1,
+    "timestamp": 1769897940,
+    "grid_line": 78061.09991713763,
+    "fee": 0.390301
+  },
+  {
+    "action": "open_buy",
+    "price": 78541.1,
+    "size": 0.01,
+    "level": 3,
+    "timestamp": 1769901540,
+    "grid_line": 78443.11021910272,
+    "fee": 0.39270550000000004
+  },
+  {
+    "action": "open_buy",
+    "price": 78746.1,
+    "size": 0.02,
+    "level": 4,
+    "timestamp": 1769901660,
+    "grid_line": 78616.9253539344,
+    "fee": 0.7874610000000002
+  },
+  {
+    "action": "open_buy",
+    "price": 79068.8,
+    "size": 0.04,
+    "level": 5,
+    "timestamp": 1769901780,
+    "grid_line": 78868.041484789,
+    "fee": 1.5813760000000003
+  },
+  {
+    "action": "open_sell",
+    "price": 78000.1,
+    "size": 0.01,
+    "level": 2,
+    "timestamp": 1769929620,
+    "grid_line": 78003.7223908994,
+    "fee": 0.3900005
+  },
+  {
+    "action": "close_all",
+    "price": 78515.7,
+    "timestamp": "1770043140",
     "reason": "end_of_data",
-    "realized_pnl": -19.910199999999897,
-    "buy_count": 1,
-    "sell_count": 1
+    "realized_pnl": -33.185000000000585,
+    "buy_count": 5,
+    "sell_count": 2,
+    "fee": 4.3183635
   }
 ]

@@ -441,6 +441,7 @@ class RealtimeArbitrageTrader:
     def save_positions(self):
         """保存持仓记录到JSON文件"""
         try:
+            import os
             def convert(obj):
                 """转换numpy类型为Python原生类型"""
                 import numpy as np
@@ -454,10 +455,13 @@ class RealtimeArbitrageTrader:
                     return [convert(i) for i in obj]
                 return obj
             
+            # 确保结果目录存在
+            os.makedirs(config.RESULTS_DIR, exist_ok=True)
             positions = convert(self.system.positions)
-            with open('套利系统/arbitrage_positions.json', 'w', encoding='utf-8') as f:
+            positions_file = os.path.join(config.RESULTS_DIR, 'arbitrage_positions.json')
+            with open(positions_file, 'w', encoding='utf-8') as f:
                 json.dump(positions, f, ensure_ascii=False, indent=2)
-            logging.info("持仓记录已保存到 arbitrage_positions.json")
+            logging.info(f"持仓记录已保存到 {positions_file}")
         except Exception as e:
             logging.error(f"保存持仓记录失败: {e}")
 

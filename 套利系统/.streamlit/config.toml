@@ -1,0 +1,10 @@
+# 套利系统仪表盘 - 柔和深灰主题、全宽布局
+[theme]
+primaryColor = "#6b8cae"
+backgroundColor = "#1a1d24"
+secondaryBackgroundColor = "#262b34"
+textColor = "#d8dce4"
+font = "sans serif"
+
+[server]
+headless = true

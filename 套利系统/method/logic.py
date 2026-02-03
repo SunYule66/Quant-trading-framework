@@ -6,6 +6,14 @@ import datetime
 from glob import glob
 import matplotlib.pyplot as plt
 import os
+import sys
+
+# 添加父目录到路径，以便导入config
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
+
+# 全项目统一使用北京时间
+BEIJING_TZ = datetime.timezone(datetime.timedelta(hours=8))
 
 class ArbitrageSystem:
     def __init__(self, X, Y, A, B, N, M, P, Q):
@@ -302,10 +310,10 @@ def load_binance_funding(filename):
     return fundings
 
 # 更新路径指向data文件夹中的子文件夹
-glob_okx_price = glob("套利系统/data/OKX_1m_kline/BTC-USDT-candlesticks-2025-*.csv")
-glob_binance_price = glob("套利系统/data/Binance_1m_kline/BTCUSDT-1m-2025-*.csv")
-glob_okx_funding = glob("套利系统/data/OKX_funding_rate/allswap-fundingrates-2025-*.csv")
-file_binance_funding = "套利系统/data/Binance_funding_rate/Funding Rate History_BTCUSDT Perpetual_2025-12-09.csv"
+glob_okx_price = glob(os.path.join(config.DATA_DIR, "OKX_1m_kline", "BTC-USDT-candlesticks-2025-*.csv"))
+glob_binance_price = glob(os.path.join(config.DATA_DIR, "Binance_1m_kline", "BTCUSDT-1m-2025-*.csv"))
+glob_okx_funding = glob(os.path.join(config.DATA_DIR, "OKX_funding_rate", "allswap-fundingrates-2025-*.csv"))
+file_binance_funding = os.path.join(config.DATA_DIR, "Binance_funding_rate", "Funding Rate History_BTCUSDT Perpetual_2025-12-09.csv")
 
 # 批量读取所有数据文件
 okx_prices, binance_prices = [], []
@@ -336,24 +344,15 @@ df['okx_price'] = df_okx_price['price']
 df['binance_funding'] = df_binance_funding['funding_rate']
 df['okx_funding'] = df_okx_funding['funding_rate']
 
-# 时间戳转datetime
-df['datetime'] = pd.to_datetime(df.index, unit='s')
+# 时间戳转 datetime（北京时间）
+df['datetime'] = pd.to_datetime(df.index, unit='s', utc=True).dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
 
 # 筛选时间段
 mask = (df['datetime'] >= pd.Timestamp('2025-11-24')) & (df['datetime'] <= pd.Timestamp('2025-12-07 16:00:00'))
 df = df.loc[mask]
 
-# 实例化套利系统，参数可根据实际需求调整
-system = ArbitrageSystem(
-    X=0.000068,  # 差价触发阈值
-    Y=0.000038, # 资金费率差触发阈值
-    A=0.000235, # 可忽略差价阈值
-    B=0.00014,# 可忽略资金费率差阈值
-    N=5,    # 历史小时数
-    M=5,     # 资金费率不利持续时间
-    P=0.0049,  # 盈利平仓阈值
-    Q=0.000062   # 亏损止损阈值
-)
+# 实例化套利系统，参数统一从 config.ARBITRAGE_CONFIG 读取
+system = ArbitrageSystem(**config.ARBITRAGE_CONFIG)
 
 # 预处理数据，构造套利逻辑所需字段
 df['price_a'] = df['okx_price']
@@ -403,7 +402,7 @@ def convert(obj):
     return obj
 
 # 创建results文件夹
-results_dir = '套利系统/results'
+results_dir = config.RESULTS_DIR
 os.makedirs(results_dir, exist_ok=True)
 
 # 输出开仓和平仓信息到results文件夹
@@ -485,7 +484,7 @@ results_summary = {
         'P': system.P,
         'Q': system.Q
     },
-    '计算时间': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    '计算时间': datetime.datetime.now(BEIJING_TZ).strftime('%Y-%m-%d %H:%M:%S')
 }
 with open(os.path.join(results_dir, 'results_summary.json'), 'w', encoding='utf-8') as f:
     json.dump(results_summary, f, ensure_ascii=False, indent=2)
@@ -497,9 +496,9 @@ def plot_results(df, positions, funding_df, output_dir):
     plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS']
     plt.rcParams['axes.unicode_minus'] = False
     
-    # 准备数据
+    # 准备数据（时间统一为北京时间）
     df_plot = df.copy()
-    df_plot['datetime'] = pd.to_datetime(df_plot.index, unit='s')
+    df_plot['datetime'] = pd.to_datetime(df_plot.index, unit='s', utc=True).dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
     
     # 创建图表
     plt.figure(figsize=(14, 8))
@@ -517,8 +516,8 @@ def plot_results(df, positions, funding_df, output_dir):
             pos_df['close_ts'] = pos_df['平仓信息'].apply(
                 lambda x: pd.to_numeric(x.get('平仓时间戳'), errors='coerce') if x and isinstance(x, dict) else None
             )
-            pos_df['open_dt'] = pd.to_datetime(pos_df['open_ts'], unit='s', errors='coerce')
-            pos_df['close_dt'] = pd.to_datetime(pos_df['close_ts'], unit='s', errors='coerce')
+            pos_df['open_dt'] = pd.to_datetime(pos_df['open_ts'], unit='s', utc=True, errors='coerce').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+            pos_df['close_dt'] = pd.to_datetime(pos_df['close_ts'], unit='s', utc=True, errors='coerce').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
             
             # 准备价格参考数据
             price_ref = df_plot[['datetime', 'price_a']].dropna().copy()
@@ -610,7 +609,7 @@ def plot_results(df, positions, funding_df, output_dir):
             pos_df_ret['close_ts'] = pd.to_numeric(pos_df_ret['close_ts'], errors='coerce')
             ts_min, ts_max = df.index.min(), df.index.max()
             pos_df_ret = pos_df_ret[(pos_df_ret['close_ts'] >= ts_min) & (pos_df_ret['close_ts'] <= ts_max)]
-            pos_df_ret['close_dt'] = pd.to_datetime(pos_df_ret['close_ts'], unit='s')
+            pos_df_ret['close_dt'] = pd.to_datetime(pos_df_ret['close_ts'], unit='s', utc=True, errors='coerce').dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
             pos_df_ret = pos_df_ret.dropna(subset=['close_dt'])
             pos_df_ret['price_ret'] = pos_df_ret.apply(calc_price_return_plot, axis=1)
             pos_df_ret['funding_ret'] = pos_df_ret.apply(lambda r: calc_funding_return_plot(r, funding_df_plot), axis=1)
